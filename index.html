@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 </head>
 <body>
+  <div class="background-blur"></div>
 
   <header>
     <h1>Live Sensor Feed</h1>
@@ -16,26 +17,32 @@
   </header>
 
   <main>
-    <div class="card-grid">
-
-      <div class="card">
-        <div class="icon">🌡️</div>
-        <div class="label">Temperature</div>
-        <div class="value" id="temp">--</div>
-        <div class="unit">°C</div>
+    <div class="card">
+      <div class="toggle-buttons">
+        <button class="toggle-btn active" data-type="temp">🌡️ Temperature</button>
+        <button class="toggle-btn" data-type="humid">💧 Humidity</button>
       </div>
 
-      <div class="card">
-        <div class="icon">💧</div>
-        <div class="label">Humidity</div>
-        <div class="value" id="humid">--</div>
-        <div class="unit">%</div>
+      <div class="sensor-display">
+        <div class="label" id="display-label">Temperature</div>
+        <div class="value-box">
+          <span class="value" id="display-value">--</span>
+          <span class="unit" id="display-unit">°C</span>
+        </div>
+
+        <div class="health-bar-container">
+          <div class="health-bar" id="health-bar"></div>
+        </div>
+
+        <div class="range-info">
+          <span id="range-min">25°C</span>
+          <span id="range-max">35°C</span>
+        </div>
       </div>
 
-    </div>
-
-    <div class="last-update">
-      Last updated: <span id="timestamp">waiting for data...</span>
+      <div class="last-update">
+        Last updated: <span id="timestamp">waiting for data...</span>
+      </div>
     </div>
   </main>
 
