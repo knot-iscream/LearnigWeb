@@ -1,6 +1,7 @@
 // Must match what you put in the Arduino code
 const MQTT_BROKER = "broker.hivemq.com";
 const MQTT_PORT   = 8884;          // WebSocket Secure port for HiveMQ
+const MQTT_PATH   = "/mqtt";       // HiveMQ WebSocket path
 const TOPIC_TEMP  = "fardin/sensor/temperature";
 const TOPIC_HUMID = "fardin/sensor/humidity";
 
@@ -14,7 +15,7 @@ let reloadTimer = null;
 
 // Create MQTT client with WebSocket endpoint
 const clientId = "web-" + Math.random().toString(16).substr(2, 8);
-const client   = new Paho.MQTT.Client("wss://" + MQTT_BROKER + ":" + MQTT_PORT, clientId);
+const client   = new Paho.MQTT.Client(MQTT_BROKER, parseInt(MQTT_PORT), MQTT_PATH, clientId);
 
 // What to do when a message arrives
 client.onMessageArrived = function(message) {
