@@ -9,6 +9,9 @@ const tempEl      = document.getElementById("temp");
 const humidEl     = document.getElementById("humid");
 const timestampEl = document.getElementById("timestamp");
 
+const RELOAD_DELAY_MS = 5000;
+let reloadTimer = null;
+
 // Create MQTT client
 const clientId = "web-" + Math.random().toString(16).substr(2, 8);
 const client   = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, clientId);
@@ -30,11 +33,24 @@ client.onMessageArrived = function(message) {
 };
 
 client.onConnectionLost = function(response) {
+  if (!navigator.onLine) {
+    setStatus("offline", "⚪ Offline — waiting for internet...");
+    scheduleReload(RELOAD_DELAY_MS);
+    return;
+  }
+
   setStatus("disconnected", "⚪ Disconnected — retrying...");
   setTimeout(connect, 3000);   // auto-reconnect
 };
 
 function connect() {
+  if (!navigator.onLine) {
+    setStatus("offline", "⚪ Offline — reconnect when internet returns");
+    scheduleReload(RELOAD_DELAY_MS);
+    return;
+  }
+
+  cancelReload();
   setStatus("disconnected", "⚪ Connecting...");
   client.connect({
     onSuccess: function() {
@@ -43,12 +59,42 @@ function connect() {
       client.subscribe(TOPIC_HUMID);
     },
     onFailure: function(err) {
-      setStatus("error", "🔴 Connection failed");
+      if (!navigator.onLine) {
+        setStatus("offline", "⚪ Offline — waiting for internet...");
+        scheduleReload(RELOAD_DELAY_MS);
+      } else {
+        setStatus("error", "🔴 Connection failed — retrying...");
+        setTimeout(connect, 5000);
+      }
       console.error(err);
-      setTimeout(connect, 5000);
     },
     useSSL: false
   });
+}
+
+window.addEventListener("offline", () => {
+  setStatus("offline", "⚪ Offline — reloading when internet returns...");
+  scheduleReload(RELOAD_DELAY_MS);
+});
+
+window.addEventListener("online", () => {
+  cancelReload();
+  setStatus("disconnected", "⚪ Online — reconnecting...");
+  connect();
+});
+
+function scheduleReload(delay) {
+  if (reloadTimer) return;
+  reloadTimer = setTimeout(() => {
+    reloadTimer = null;
+    window.location.reload();
+  }, delay);
+}
+
+function cancelReload() {
+  if (!reloadTimer) return;
+  clearTimeout(reloadTimer);
+  reloadTimer = null;
 }
 
 function flashUpdate(element, value) {
