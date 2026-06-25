@@ -16,7 +16,7 @@ const rangeMaxEl       = document.getElementById("range-max");
 const timestampEl      = document.getElementById("timestamp");
 const toggleBtns       = document.querySelectorAll(".display-toggle-btn");
 const chartToggleBtns  = document.querySelectorAll(".chart-toggle-btn");
-// chart label element removed from markup
+const chartFrame       = document.querySelector(".chart-frame");
 const chartTimestampEl = document.getElementById("chart-timestamp");
 const chartCanvas      = document.getElementById("history-chart");
 const STORAGE_KEY      = "learnigWeb_sensorHistory";
@@ -37,6 +37,15 @@ const CHART_ANIMATION_DURATION = 500;
 
 const RELOAD_DELAY_MS = 5000;
 let reloadTimer = null;
+
+// Responsive optimization
+let resizeDebounceId = null;
+let lastKnownChartWidth = null;
+const RESIZE_DEBOUNCE_DELAY = 150;
+
+// Check for reduced motion preference
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const EFFECTIVE_CHART_ANIMATION_DURATION = prefersReducedMotion ? 100 : CHART_ANIMATION_DURATION;
 
 function saveHistoryToStorage() {
   try {
@@ -243,26 +252,48 @@ function switchDisplay(type) {
 }
 
 function switchChartDisplay(type) {
-  currentChartType = type;
+  if (currentChartType === type) return;
+
   chartToggleBtns.forEach(btn => {
     btn.classList.toggle("active", btn.dataset.type === type);
   });
-  // chart label removed; no UI text to update
-  saveHistoryToStorage();
-  updateHistoryChart();
+
+  chartFrame?.classList.add("chart-transitioning");
+
+  setTimeout(() => {
+    currentChartType = type;
+    saveHistoryToStorage();
+    updateHistoryChart();
+    chartFrame?.classList.remove("chart-transitioning");
+  }, prefersReducedMotion ? 50 : 200);
 }
 
 toggleBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     switchDisplay(btn.dataset.type);
-  });
+  }, { passive: true });
 });
 
 chartToggleBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     switchChartDisplay(btn.dataset.type);
-  });
+  }, { passive: true });
 });
+
+// Debounced resize handler for chart responsiveness
+function onWindowResize() {
+  if (resizeDebounceId) clearTimeout(resizeDebounceId);
+  resizeDebounceId = setTimeout(() => {
+    const newWidth = chartCanvas?.clientWidth;
+    if (newWidth && newWidth !== lastKnownChartWidth) {
+      lastKnownChartWidth = newWidth;
+      updateHistoryChart();
+    }
+    resizeDebounceId = null;
+  }, RESIZE_DEBOUNCE_DELAY);
+}
+
+window.addEventListener("resize", onWindowResize, { passive: true });
 
 // Initialize the main card display state
 switchDisplay(currentDisplay);
@@ -282,7 +313,7 @@ function cancelChartAnimation() {
 
 function animateChart(timestamp) {
   const elapsed = timestamp - chartAnimationStart;
-  const progress = Math.min(1, elapsed / CHART_ANIMATION_DURATION);
+  const progress = Math.min(1, elapsed / EFFECTIVE_CHART_ANIMATION_DURATION);
   updateHistoryChart(progress);
 
   if (progress < 1) {
@@ -293,10 +324,11 @@ function animateChart(timestamp) {
 }
 
 function updateHistoryChart(progress = 1) {
-  const ctx = chartCanvas.getContext("2d");
+  const ctx = chartCanvas.getContext("2d", { alpha: true });
   const width = chartCanvas.clientWidth;
-  const height = 320;
-  const dpr = window.devicePixelRatio || 1;
+  const height = window.innerWidth < 480 ? 240 : 320;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap DPR for performance
+  
   chartCanvas.width = width * dpr;
   chartCanvas.height = height * dpr;
   chartCanvas.style.height = `${height}px`;
@@ -309,12 +341,12 @@ function updateHistoryChart(progress = 1) {
 
   if (data.length === 0) {
     ctx.fillStyle = "#333";
-      ctx.font = "16px 'Trebuchet MS', 'Trebuchet', sans-serif";
-    ctx.fillText("Waiting for live data...", 24, height / 2);
+    ctx.font = "14px 'Trebuchet MS', 'Trebuchet', sans-serif";
+    ctx.fillText("Waiting for live data...", 16, height / 2);
     return;
   }
 
-  const padding = 36;
+  const padding = window.innerWidth < 600 ? 24 : 36;
   const chartWidth = width - padding * 2;
   const chartHeight = height - padding * 2;
   const minValue = Math.min(...data);
@@ -334,10 +366,11 @@ function updateHistoryChart(progress = 1) {
   }
 
   ctx.strokeStyle = "#cb2957";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
   const pointCount = data.length;
-  const lastIndex = pointCount - 1;
   const oldCount = Math.max(0, pointCount - 1);
 
   const oldX = index => padding + (chartWidth * index / Math.max(1, oldCount - 1));
@@ -364,25 +397,33 @@ function updateHistoryChart(progress = 1) {
   }
   ctx.stroke();
 
-  ctx.fillStyle = "#cb2957";
-  for (let index = 0; index < pointCount; index++) {
-    const x = getX(index);
-    const normalized = (data[index] - minY) / (maxY - minY);
-    const y = padding + chartHeight - normalized * chartHeight;
-    ctx.beginPath();
-    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-    ctx.fill();
+  // Draw data points - skip on very small screens if many points
+  const shouldDrawPoints = pointCount <= 12 || window.innerWidth >= 768;
+  if (shouldDrawPoints) {
+    ctx.fillStyle = "#cb2957";
+    for (let index = 0; index < pointCount; index++) {
+      const x = getX(index);
+      const normalized = (data[index] - minY) / (maxY - minY);
+      const y = padding + chartHeight - normalized * chartHeight;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   ctx.fillStyle = "#000";
-  ctx.font = "14px 'Trebuchet MS', 'Trebuchet', sans-serif";
+  ctx.font = window.innerWidth < 600 ? "12px 'Trebuchet MS', 'Trebuchet', sans-serif" : "14px 'Trebuchet MS', 'Trebuchet', sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText(`${currentChartType === "temp" ? "Temperature" : "Humidity"}: ${data[data.length - 1].toFixed(1)}${currentChartType === "temp" ? "°C" : "%"}`, padding, 22);
+  ctx.fillText(
+    `${currentChartType === "temp" ? "Temperature" : "Humidity"}: ${data[data.length - 1].toFixed(1)}${currentChartType === "temp" ? "°C" : "%"}`,
+    padding,
+    20
+  );
 
   ctx.fillStyle = "#5a5a5a";
-  ctx.font = "12px 'Trebuchet MS', 'Trebuchet', sans-serif";
+  ctx.font = "11px 'Trebuchet MS', 'Trebuchet', sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText(labels[0] || "", width - padding, height - 10);
+  ctx.fillText(labels[0] || "", width - padding, height - 8);
 }
 
 function scheduleReload(delay) {
@@ -407,13 +448,13 @@ function setStatus(type, text) {
 window.addEventListener("offline", () => {
   setStatus("offline", "Offline — reloading when internet returns...");
   scheduleReload(RELOAD_DELAY_MS);
-});
+}, { passive: true });
 
 window.addEventListener("online", () => {
   cancelReload();
   setStatus("disconnected", "Online — reconnecting...");
   connect();
-});
+}, { passive: true });
 
 loadHistoryFromStorage();
 
