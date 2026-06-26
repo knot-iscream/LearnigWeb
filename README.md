@@ -2,6 +2,8 @@
 
 A simple ESP32 + DHT sensor dashboard that shows live temperature and humidity readings in your browser.
 
+> Disclaimer: this project was built mostly by vibe coding, with a focus on quick setup and experimentation rather than production polish.
+
 ## What this project includes
 
 - `esp32_dht.ino` — ESP32 sketch that reads a DHT sensor and publishes temperature/humidity to MQTT.
