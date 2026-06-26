@@ -60,9 +60,9 @@ void loop() {
   if (!client.connected()) reconnect();
   client.loop();
 
-  // Read sensor every 1 second (real-time update)
+  // Read sensor every 2 seconds (real-time update)
   static unsigned long lastMsg = 0;
-  if (millis() - lastMsg > 1000) {
+  if (millis() - lastMsg > 2000) {
     lastMsg = millis();
 
     float temp  = dht.readTemperature();   // Celsius
