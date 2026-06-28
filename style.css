@@ -12,7 +12,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Mobile-safe solid fallback — no fixed/blur background to fight with */
   background-color: #f4e7df;
 }
 
@@ -36,16 +35,6 @@ body {
   }
 }
 
-.background-blur {
-  display: none;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 body::before {
   content: '';
   position: fixed;
@@ -56,10 +45,6 @@ body::before {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
   z-index: -1;
   pointer-events: none;
-}
-
-header {
-  display: none;
 }
 
 .floating-status {
@@ -90,24 +75,16 @@ header {
   }
 }
 
-.floating-status.disconnected { 
-  background: rgba(0, 0, 0, 0.7); 
-  color: #eeeeee; 
+.floating-status.disconnected,
+.floating-status.error,
+.floating-status.offline {
+  background: rgba(0, 0, 0, 0.7);
+  color: #eeeeee;
 }
 
-.floating-status.connected { 
-  background: rgba(203, 41, 87, 0.7); 
-  color: #eeeeee; 
-}
-
-.floating-status.error { 
-  background: rgba(0, 0, 0, 0.7); 
-  color: #eeeeee; 
-}
-
-.floating-status.offline { 
-  background: rgba(0, 0, 0, 0.7); 
-  color: #eeeeee; 
+.floating-status.connected {
+  background: rgba(203, 41, 87, 0.7);
+  color: #eeeeee;
 }
 
 main {
@@ -305,6 +282,9 @@ main {
 .chart-card {
   grid-area: chart;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 @media (min-width: 481px) {
@@ -318,12 +298,6 @@ main {
   .card {
     padding: 40px 30px;
   }
-}
-
-.chart-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .weather-header {
@@ -385,15 +359,6 @@ main {
   gap: 12px;
   margin-bottom: 24px;
   justify-content: center;
-}
-
-#history-chart {
-  width: 100%;
-  height: auto;
-  max-height: 360px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .chart-hint {
@@ -470,8 +435,6 @@ main {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  will-change: opacity, transform;
 }
 
 @media (min-width: 600px) {
@@ -481,11 +444,6 @@ main {
     border-radius: 16px;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
-}
-
-.chart-frame.chart-transitioning {
-  opacity: 0.42;
-  transform: translateY(8px);
 }
 
 #history-chart {
@@ -616,13 +574,6 @@ main {
   font-size: 0.85rem;
 }
 
-footer {
-  text-align: center;
-  padding: 40px;
-  color: #000000;
-  font-size: 0.85rem;
-}
-
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -631,13 +582,7 @@ footer {
   }
 }
 
-/* ===== Firefox mobile performance overrides =====
- * Applied only when JavaScript detects Firefox and adds the class.
- * Chromium browsers (Chrome, Edge, Samsung, Opera) are completely unaffected.
- *
- * backdrop-filter is the #1 perf killer on Firefox mobile — it renders
- * entirely on the CPU (no GPU acceleration like Chromium). Removing it
- * on Firefox gives a massive frame-rate improvement. */
+/* Firefox mobile performance overrides */
 .firefox .card,
 .firefox .floating-status,
 .firefox .toggle-btn,
@@ -648,13 +593,11 @@ footer {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Remove will-change which forces compositor layers (costly on Firefox) */
 .firefox .card,
 .firefox .chart-frame {
   will-change: auto;
 }
 
-/* Slightly more opaque card background to compensate for missing blur */
 .firefox .card {
   background: rgba(238, 238, 238, 0.45);
 }
@@ -671,33 +614,26 @@ footer {
   }
 }
 
-/* Toggle buttons — simplified shadow (no blur layer to interact with) */
 .firefox .toggle-btn {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Health bar transitions — shorter on Firefox to reduce paint churn */
 .firefox .health-bar {
   transition: width 0.1s linear, background 0.1s linear;
 }
 
-/* Chart frame transitions — disable on Firefox */
 .firefox .chart-frame {
   transition: none;
 }
 
-/* Floating status — solid background instead of semi-transparent + blur */
 .firefox .floating-status {
   background: rgba(0, 0, 0, 0.85);
 }
 
-/* Force background-attachment: scroll on Firefox mobile to avoid
- * the expensive fixed-background compositing path */
 .firefox body {
   background-attachment: scroll !important;
 }
 
-/* Weather metric badges — remove blur, keep border */
 .firefox .weather-metric {
   background: rgba(255, 255, 255, 0.25);
 }
