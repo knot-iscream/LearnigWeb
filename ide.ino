@@ -11,8 +11,8 @@ const char* mqtt_server = "broker.hivemq.com";
 const int   mqtt_port   = 1883;
 
 // Topic names — must match your webpage exactly
-const char* topic_temp  = "fardin/sensor/temperature";
-const char* topic_humid = "fardin/sensor/humidity";
+const char* topic_temp  = "iscream/sensor/temperature";
+const char* topic_humid = "iscream/sensor/humidity";
 // ===========================
 
 #define DHTPIN 32

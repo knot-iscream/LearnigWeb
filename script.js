@@ -2,30 +2,38 @@
 const MQTT_BROKER = "broker.hivemq.com";
 const MQTT_PORT   = 8884;
 const MQTT_PATH   = "/mqtt";
-const TOPIC_TEMP  = "fardin/sensor/temperature";
-const TOPIC_HUMID = "fardin/sensor/humidity";
+const TOPIC_TEMP  = "iscream/sensor/temperature";
+const TOPIC_HUMID = "iscream/sensor/humidity";
+const OUTSIDE_WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
 
 // UI Elements
 const statusEl         = document.getElementById("status");
 const displayValueEl   = document.getElementById("display-value");
 const displayLabelEl   = document.getElementById("display-label");
 const displayUnitEl    = document.getElementById("display-unit");
+const displayCommentEl = document.getElementById("display-comment");
 const healthBarEl      = document.getElementById("health-bar");
 const rangeMinEl       = document.getElementById("range-min");
 const rangeMaxEl       = document.getElementById("range-max");
 const timestampEl      = document.getElementById("timestamp");
+const outsideTempEl    = document.getElementById("outside-temp");
+const outsideHumidityEl = document.getElementById("outside-humidity");
+const outsideLocationEl = document.getElementById("outside-location");
+const outsideTimestampEl = document.getElementById("outside-timestamp");
 const toggleBtns       = document.querySelectorAll(".display-toggle-btn");
 const chartToggleBtns  = document.querySelectorAll(".chart-toggle-btn");
 const chartFrame       = document.querySelector(".chart-frame");
 const chartTimestampEl = document.getElementById("chart-timestamp");
 const chartCanvas      = document.getElementById("history-chart");
-const STORAGE_KEY      = "learnigWeb_sensorHistory";
+const STORAGE_KEY      = "iscream_sensorHistory";
 
 // State
 let currentDisplay      = "temp";  // "temp" or "humid"
 let currentChartType    = "temp";
 let tempValue           = null;
 let humidValue          = null;
+let outsideTempValue    = null;
+let outsideHumidityValue = null;
 const historyMaxPoints  = 24;
 const tempHistory       = [];
 const humidHistory      = [];
@@ -203,8 +211,24 @@ function connect() {
   });
 }
 
+function getSensorComment(value, type) {
+  if (type === "temp") {
+    if (value < 18) return "Too cold";
+    if (value < 25) return "Chilling.";
+    if (value < 30) return "Nice and comfy.";
+    if (value < 34) return "Call the fire department";
+    return "is it hell?";
+  }
+
+  if (value < 30) return "Dry as a bone.";
+  if (value < 50) return "It fresh.";
+  if (value < 70) return "Sweaty as hell.";
+  return "Need a spa day";
+}
+
 function updateHealthBar(value, type) {
   displayValueEl.textContent = value.toFixed(1);
+  displayCommentEl.textContent = getSensorComment(value, type);
   
   let percentage, minRange, maxRange;
   if (type === "temp") {
@@ -428,10 +452,6 @@ function updateHistoryChart(progress = 1) {
     20
   );
 
-  ctx.fillStyle = "#5a5a5a";
-  ctx.font = "11px 'Trebuchet MS', 'Trebuchet', sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText(labels[0] || "", width - padding, height - 8);
 }
 
 function scheduleReload(delay) {
@@ -462,9 +482,78 @@ window.addEventListener("online", () => {
   cancelReload();
   setStatus("disconnected", "Online — reconnecting...");
   connect();
+  fetchOutsideWeather();
 }, { passive: true });
+
+function updateOutsideWeather(temperature, humidity, locationName) {
+  outsideTempValue = typeof temperature === "number" ? temperature : null;
+  outsideHumidityValue = typeof humidity === "number" ? humidity : null;
+
+  outsideTempEl.textContent = outsideTempValue !== null ? outsideTempValue.toFixed(1) : "--";
+  outsideHumidityEl.textContent = outsideHumidityValue !== null ? outsideHumidityValue.toFixed(0) : "--";
+  outsideLocationEl.textContent = locationName || "Current location";
+  outsideTimestampEl.textContent = new Date().toLocaleTimeString();
+}
+
+function formatLocationName(timezone) {
+  if (!timezone) return "Current location";
+  const parts = timezone.split("/");
+  return parts[parts.length - 1].replace(/_/g, " ");
+}
+
+function useDefaultOutsideWeather() {
+  updateOutsideWeather(null, null, "Live weather unavailable");
+}
+
+async function fetchOutsideWeather() {
+  try {
+    const locationResponse = await fetch("https://ipinfo.io/json", {
+      headers: { Accept: "application/json" }
+    });
+    if (!locationResponse.ok) {
+      throw new Error("Location lookup failed");
+    }
+
+    const locationData = await locationResponse.json();
+    const loc = locationData?.loc;
+    let latitude = locationData?.latitude;
+    let longitude = locationData?.longitude;
+
+    if (typeof loc === "string") {
+      const [parsedLat, parsedLon] = loc.split(",").map(value => Number(value));
+      latitude = parsedLat;
+      longitude = parsedLon;
+    }
+
+    if (typeof latitude !== "number" || typeof longitude !== "number" || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      throw new Error("Location coordinates unavailable");
+    }
+
+    const response = await fetch(`${OUTSIDE_WEATHER_URL}?latitude=${latitude.toFixed(4)}&longitude=${longitude.toFixed(4)}&current=temperature_2m,relative_humidity_2m&timezone=auto`);
+
+    if (!response.ok) {
+      throw new Error("Weather request failed");
+    }
+
+    const data = await response.json();
+    const current = data?.current;
+    const locationLabel = [locationData?.city, locationData?.region, locationData?.country]
+      .filter(Boolean)
+      .join(", ");
+
+    updateOutsideWeather(
+      current?.temperature_2m,
+      current?.relative_humidity_2m,
+      locationLabel || formatLocationName(data?.timezone)
+    );
+  } catch (err) {
+    console.warn("Unable to load outside weather:", err);
+    useDefaultOutsideWeather();
+  }
+}
 
 loadHistoryFromStorage();
 
 // Start connection
 connect();
+fetchOutsideWeather();

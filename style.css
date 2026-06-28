@@ -131,6 +131,9 @@ main {
   gap: 16px;
   width: 100%;
   grid-template-columns: 1fr;
+  grid-template-areas:
+    "left-stack"
+    "chart";
 }
 
 @media (min-width: 600px) {
@@ -141,8 +144,11 @@ main {
 
 @media (min-width: 900px) {
   .card-grid {
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "left-stack chart";
     gap: 24px;
+    align-items: stretch;
   }
 }
 
@@ -156,6 +162,41 @@ main {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   will-change: transform;
+}
+
+.left-stack {
+  grid-area: left-stack;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+@media (min-width: 600px) {
+  .left-stack {
+    gap: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .left-stack {
+    gap: 24px;
+  }
+}
+
+.left-stack .card {
+  flex: 1;
+}
+
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-card {
+  grid-area: chart;
+  height: 100%;
 }
 
 @media (min-width: 481px) {
@@ -175,6 +216,58 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.weather-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weather-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.weather-location {
+  font-size: 0.9rem;
+  color: #4a4a4a;
+}
+
+.weather-display {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.weather-metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  min-width: 136px;
+}
+
+.weather-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #444444;
+}
+
+.weather-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.weather-unit {
+  font-size: 0.95rem;
+  color: #333333;
 }
 
 .chart-toggle-buttons {
@@ -201,30 +294,30 @@ main {
 
 .toggle-buttons {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 18px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 @media (min-width: 600px) {
   .toggle-buttons {
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: 8px;
+    margin-bottom: 22px;
   }
 }
 
 .toggle-btn {
-  padding: 10px 20px;
+  padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.16);
   color: #141414;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   touch-action: manipulation;
@@ -234,8 +327,8 @@ main {
 
 @media (min-width: 600px) {
   .toggle-btn {
-    padding: 12px 26px;
-    font-size: 0.95rem;
+    padding: 8px 16px;
+    font-size: 0.82rem;
   }
 }
 
@@ -356,6 +449,15 @@ main {
     font-size: 1.5rem;
     margin-left: 8px;
   }
+}
+
+.status-comment {
+  margin: 10px auto 0;
+  color: rgba(17, 17, 17, 0.92);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.4;
+  max-width: 380px;
 }
 
 .health-bar-container {

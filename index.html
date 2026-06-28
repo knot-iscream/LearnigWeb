@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="theme-color" content="#cb2957"/>
   <meta name="description" content="Real-time temperature and humidity monitoring from ESP32 sensor"/>
-  <title>Fardin's Live Sensor</title>
+  <title>DHT Dashboard</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com"/>
   <link rel="preconnect" href="https://picsum.photos"/>
   <link rel="stylesheet" href="style.css"/>
@@ -18,31 +18,58 @@
 
   <main>
     <div class="card-grid">
-      <div class="card">
-        <div class="toggle-buttons">
-          <button class="toggle-btn display-toggle-btn active" data-type="temp">Temperature</button>
-          <button class="toggle-btn display-toggle-btn" data-type="humid">Humidity</button>
+      <div class="left-stack">
+        <div class="card sensor-card">
+          <div class="toggle-buttons">
+            <button class="toggle-btn display-toggle-btn active" data-type="temp">Temperature</button>
+            <button class="toggle-btn display-toggle-btn" data-type="humid">Humidity</button>
+          </div>
+
+          <div class="sensor-display">
+            <div class="label" id="display-label">Temperature</div>
+            <div class="value-box">
+              <span class="value" id="display-value">--</span>
+              <span class="unit" id="display-unit">°C</span>
+            </div>
+            <div class="status-comment" id="display-comment">Waiting for the first reading...</div>
+
+            <div class="health-bar-container">
+              <div class="health-bar" id="health-bar"></div>
+            </div>
+
+            <div class="range-info">
+              <span id="range-min">25°C</span>
+              <span id="range-max">35°C</span>
+            </div>
+          </div>
+
+          <div class="last-update">
+            Last updated: <span id="timestamp">waiting for data...</span>
+          </div>
         </div>
 
-        <div class="sensor-display">
-          <div class="label" id="display-label">Temperature</div>
-          <div class="value-box">
-            <span class="value" id="display-value">--</span>
-            <span class="unit" id="display-unit">°C</span>
+        <div class="card weather-card">
+          <div class="weather-header">
+            <div class="weather-title">Outside Weather</div>
+            <div class="weather-location" id="outside-location">Detecting location...</div>
           </div>
 
-          <div class="health-bar-container">
-            <div class="health-bar" id="health-bar"></div>
+          <div class="weather-display">
+            <div class="weather-metric">
+              <span class="weather-label">Temp</span>
+              <span class="weather-value" id="outside-temp">--</span>
+              <span class="weather-unit">°C</span>
+            </div>
+            <div class="weather-metric">
+              <span class="weather-label">Humidity</span>
+              <span class="weather-value" id="outside-humidity">--</span>
+              <span class="weather-unit">%</span>
+            </div>
           </div>
 
-          <div class="range-info">
-            <span id="range-min">25°C</span>
-            <span id="range-max">35°C</span>
+          <div class="last-update">
+            Last Updated: <span id="outside-timestamp">waiting for data...</span>
           </div>
-        </div>
-
-        <div class="last-update">
-          Last updated: <span id="timestamp">waiting for data...</span>
         </div>
       </div>
 
@@ -60,7 +87,7 @@
         </div>
 
         <div class="last-update">
-          Graph updated: <span id="chart-timestamp">waiting for data...</span>
+          Last updated: <span id="chart-timestamp">waiting for data...</span>
         </div>
       </div>
     </div>

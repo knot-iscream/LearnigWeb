@@ -6,7 +6,7 @@ A simple ESP32 + DHT sensor dashboard that shows live temperature and humidity r
 
 ## What this project includes
 
-- `esp32_dht.ino` — ESP32 sketch that reads a DHT sensor and publishes temperature/humidity to MQTT.
+- `ide.ino` — ESP32 sketch that reads a DHT sensor and publishes temperature/humidity to MQTT.
 - `index.html` — browser dashboard UI that receives values via MQTT over WebSockets.
 - `script.js` — MQTT connection logic, display updates, and chart rendering.
 - `style.css` — dashboard styling.
@@ -30,13 +30,13 @@ Use the following wiring for a DHT22 with the ESP32:
 
 If you are using a bare DHT sensor (not a module with built-in pull-up), add a 10k resistor between `DATA` and `VCC`.
 
-> Note: The sketch currently defines `DHTTYPE` as `DHT22`. If you use a DHT11 instead, change `#define DHTTYPE DHT22` to `#define DHTTYPE DHT11` in `esp32_dht.ino`.
+> Note: The sketch currently defines `DHTTYPE` as `DHT22`. If you use a DHT11 instead, change `#define DHTTYPE DHT22` to `#define DHTTYPE DHT11` in `ide.ino`.
 
 ## Software setup
 
 ### 1. Configure the ESP32 sketch
 
-Open `esp32_dht.ino` in the Arduino IDE and update the following settings:
+Open `ide.ino` in the Arduino IDE and update the following settings:
 
 - `ssid` — your Wi-Fi network name
 - `password` — your Wi-Fi password
@@ -45,10 +45,10 @@ Open `esp32_dht.ino` in the Arduino IDE and update the following settings:
 
 The sketch publishes data to MQTT topics. In this example they are:
 
-- `fardin/sensor/temperature`
-- `fardin/sensor/humidity`
+- `iscream/sensor/temperature`
+- `iscream/sensor/humidity`
 
-These are just example topic names. Replace them with your own unique topic names in both `esp32_dht.ino` and `script.js`.
+These are just example topic names. Replace them with your own unique topic names in both `ide.ino` and `script.js`.
 
 ### 2. Upload the sketch to ESP32
 
@@ -56,7 +56,7 @@ These are just example topic names. Replace them with your own unique topic name
 2. Install the `DHT sensor library` and `PubSubClient` library.
 3. Connect the ESP32 to your computer.
 4. Select the correct board and port.
-5. Upload `esp32_dht.ino`.
+5. Upload `ide.ino`.
 
 ### 3. Run the dashboard
 
@@ -80,10 +80,10 @@ The browser dashboard connects using the MQTT WebSocket configuration in `script
 - `MQTT_BROKER` — `broker.hivemq.com`
 - `MQTT_PORT` — `8884`
 - `MQTT_PATH` — `/mqtt`
-- `TOPIC_TEMP` — `yourusername/sensor/temperature` 
-- `TOPIC_HUMID` — `yourusername/sensor/humidity` 
+- `TOPIC_TEMP` — `iscream/sensor/temperature` 
+- `TOPIC_HUMID` — `iscream/sensor/humidity` 
 
-Do not use these exact topic names unless you want to publish to the same personal topics. Replace them with your own unique topics in both `esp32_dht.ino` and `script.js`.
+Do not use these exact topic names unless you want to publish to the same topics. Replace them with your own unique topics in both `ide.ino` and `script.js`.
 
 ## How to use
 
