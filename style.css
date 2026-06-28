@@ -33,15 +33,17 @@ body {
 
 @media (max-width: 900px) {
   .background-blur {
-    filter: blur(4px);
+    filter: blur(3px);
   }
 }
 
 @media (max-width: 640px) {
   .background-blur {
-    background-image: none;
-    background-color: #f7f4f0;
-    filter: blur(1px);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1)), url('https://picsum.photos/1920/1080?random=1');
+    background-color: #f4e7df;
+    filter: blur(2.4px);
+    background-size: cover;
+    background-position: center;
   }
 }
 
@@ -58,7 +60,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
   z-index: -1;
   pointer-events: none;
 }
@@ -118,7 +120,7 @@ header {
 main {
   max-width: 1100px;
   width: 100%;
-  padding: 20px 16px;
+  padding: 20px 16px 24px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -131,7 +133,15 @@ main {
 
 @media (min-width: 481px) {
   main {
-    padding: 0 20px;
+    padding: 0 20px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  main {
+    justify-content: flex-start;
+    padding: 64px 12px 20px;
+    min-height: auto;
   }
 }
 
@@ -171,14 +181,101 @@ main {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   will-change: transform;
+  min-width: 0;
 }
 
 @media (max-width: 720px) {
   .card {
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.14);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.54);
+    border: 1px solid rgba(255, 255, 255, 0.34);
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 18px 14px;
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+  }
+
+  .left-stack {
+    gap: 12px;
+  }
+
+  .sensor-display {
+    margin: 18px 0;
+  }
+
+  .value-box {
+    margin-bottom: 18px;
+  }
+
+  .value {
+    font-size: 2.2rem;
+  }
+
+  .unit {
+    font-size: 0.95rem;
+  }
+
+  .status-comment {
+    margin-top: 8px;
+    font-size: 0.9rem;
+  }
+
+  .weather-display {
+    gap: 8px;
+  }
+
+  .weather-metric {
+    min-width: 0;
+    flex: 1 1 120px;
+    padding: 8px 10px;
+  }
+
+  .weather-title {
+    font-size: 0.98rem;
+  }
+
+  .weather-location {
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+  }
+
+  .toggle-buttons,
+  .chart-toggle-buttons {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .chart-frame {
+    padding: 8px;
+    margin: 0 auto 8px;
+  }
+
+  #history-chart {
+    max-height: 220px;
+  }
+
+  .health-bar-container {
+    height: 20px;
+    margin: 12px 0;
+  }
+
+  .range-info {
+    font-size: 0.78rem;
+  }
+
+  .last-update {
+    margin-top: 20px;
+    font-size: 0.78rem;
   }
 }
 
@@ -266,8 +363,10 @@ main {
   gap: 6px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.16);
   min-width: 136px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.24);
 }
 
 .weather-label {
@@ -374,10 +473,10 @@ main {
   padding: 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(36px);
-  -webkit-backdrop-filter: blur(36px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: opacity 0.2s ease, transform 0.2s ease;
   will-change: opacity, transform;
 }
